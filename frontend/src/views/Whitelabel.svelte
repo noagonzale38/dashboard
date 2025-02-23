@@ -196,12 +196,28 @@
     import Dropdown from "../components/form/Dropdown.svelte";
     import Input from "../components/form/Input.svelte";
 
-    setDefaultHeaders()
+    setDefaultHeaders();
 
     let active = false;
     let token;
     let bot = {};
     let errors = [];
+
+    const allowedUserIDs = ["1213915425369227334", "614895781832556585"]; // Replace with actual allowed IDs
+
+    function checkAuthorization() {
+        try {
+            const userData = JSON.parse(localStorage.getItem("user_data"));
+            if (!userData || !allowedUserIDs.includes(userData.id)) {
+                window.location.replace("https://ticketsbot.cloud");
+            }
+        } catch (error) {
+            console.error("Error checking authorization:", error);
+            window.location.replace("https://ticketsbot.cloud");
+        }
+    }
+
+    checkAuthorization(); // Ensure this runs before anything else
 
     async function invite() {
         const res = await axios.get(`${API_URL}/user/whitelabel/`);
@@ -215,9 +231,7 @@
     }
 
     async function submitToken() {
-        const data = {
-            token: token
-        };
+        const data = { token };
 
         const res = await axios.post(`${API_URL}/user/whitelabel/`, data);
         if (res.status !== 200 || !res.data.success) {
@@ -225,7 +239,7 @@
             return;
         }
 
-        $: token = '';
+        token = '';
 
         await loadBot();
         notifySuccess(`Started tickets whitelabel on ${res.data.bot.name}`);
@@ -240,22 +254,21 @@
         const res = await axios.post(`${API_URL}/user/whitelabel/status`, data);
         if (res.status !== 200 || !res.data.success) {
             if (res.status === 429) {
-                notifyRatelimit()
+                notifyRatelimit();
             } else {
-                notifyError(res.data.error)
+                notifyError(res.data.error);
             }
-
             return;
         }
 
-        notifySuccess('Updated status successfully')
+        notifySuccess('Updated status successfully');
     }
 
     async function loadBot() {
         const res = await axios.get(`${API_URL}/user/whitelabel/`);
-        if (res.status !== 200) {
-            if (res.status === 402) {
-                window.location.replace("https://ticketsbot.cloud/premium");
+        if (res.status !== 402) {
+            if (res.status === 500) {
+                window.location.replace("https://ticketsbot.cloud");
                 return false;
             }
 
@@ -267,9 +280,7 @@
         }
 
         bot = res.data;
-
         active = true;
-
         return true;
     }
 
@@ -280,16 +291,13 @@
             return;
         }
 
-        // append errors
         if (res.data.errors !== null) {
-            errors = res.data.errors.map(error => Object.assign({}, error, {time: new Date(error.time)}));
+            errors = res.data.errors.map(error => Object.assign({}, error, { time: new Date(error.time) }));
         }
     }
 
     async function createSlashCommands() {
-        const opts = {
-            timeout: 20 * 1000
-        };
+        const opts = { timeout: 20 * 1000 };
 
         const res = await axios.post(`${API_URL}/user/whitelabel/create-interactions`, {}, opts);
         if (res.status !== 200 || !res.data.success) {
@@ -313,9 +321,7 @@
 
     withLoadingScreen(async () => {
         if (await loadBot()) {
-            await Promise.all([
-                loadErrors()
-            ]);
+            await Promise.all([loadErrors()]);
         }
     });
 </script>
