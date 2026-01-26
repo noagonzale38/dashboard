@@ -50,7 +50,7 @@ export const routes = [
     {name: '/login', component: Login},
     {name: '/logout', component: Logout},
     {name: '/error', component: Error, layout: ErrorLayout},
-    !WHITELABEL_DISABLED && {name: '/whitelabel', component: Whitelabel, layout: IndexLayout},
+    {name: '/whitelabel', component: Whitelabel, layout: IndexLayout},
     {
         name: 'legal',
         nestedRoutes: [
@@ -180,3 +180,4 @@ export const routes = [
         ],
     }
 ].filter(Boolean); // Filter out false values
+
