@@ -8,7 +8,7 @@ export const DESCRIPTION =
   env.DESCRIPTION || "Management panel for the Discord Tickets V2 bot";
 export const FAVICON = env.FAVICON || "/favicon.ico";
 export const FAVICON_TYPE = env.FAVICON_TYPE || "image/ico";
-export const WHITELABEL_DISABLED = env.WHITELABEL_DISABLED || false;
+export const WHITELABEL_DISABLED = false;
 
 export const OAUTH = {
   clientId: env.CLIENT_ID || "1325579039888511056",
