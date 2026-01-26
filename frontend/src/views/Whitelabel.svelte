@@ -99,8 +99,8 @@
         const res = await axios.get(`${API_URL}/user/whitelabel/`);
         if (res.status !== 200) {
             if (res.status === 402) {
-                window.location.replace(`${FRONTPAGE_URL}/premium`);
-                return false;
+              //  window.location.replace(`${FRONTPAGE_URL}/premium`);
+                return true;
             }
 
             if (res.status !== 404) {
