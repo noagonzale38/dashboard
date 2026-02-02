@@ -29,7 +29,7 @@ func VerifyWhitelabel(isApi bool) func(ctx *gin.Context) {
 				}
 			}
 
-			if !isForced {
+			if false {
 				if isApi {
 					ctx.AbortWithStatusJSON(402, gin.H{
 						"success": false,
