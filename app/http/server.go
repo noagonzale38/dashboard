@@ -235,6 +235,13 @@ func StartServer(logger *zap.Logger, sm *livechat.SocketManager) {
 		adminGroup.DELETE("/bot-staff/:userid", botstaff.RemoveBotStaffHandler)
 	}
 
+	// External API: authenticated via a shared API key (X-Api-Key header)
+	// rather than the dashboard JWT. Intended for trusted external callers.
+	externalGroup := router.Group("/api/external", middleware.ApiKeyAuth)
+	{
+		externalGroup.DELETE("/guilds/:id/tickets/:ticketId", api_ticket.CloseTicketExternal)
+	}
+
 	if err := router.Run(config.Conf.Server.Host); err != nil {
 		panic(err)
 	}

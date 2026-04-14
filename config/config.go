@@ -25,6 +25,7 @@ type Config struct {
 			Max    int `env:"MAX,required"`
 		} `envPrefix:"RATELIMIT_"`
 		Secret         string   `env:"JWT_SECRET,required"`
+		ExternalApiKey string   `env:"EXTERNAL_API_KEY"`
 		RealIpHeaders  []string `env:"REAL_IP_HEADERS"`
 		TrustedProxies []string `env:"TRUSTED_PROXIES"`
 	}
