@@ -16,7 +16,7 @@ import (
 // ticket is closed via the external API. The external API is authenticated by
 // a shared API key rather than a logged-in user, so all closes are attributed
 // to this fixed identity.
-const externalActorId uint64 = 1446630962644386033
+const externalActorId uint64 = 793162371702194207
 
 // CloseTicketExternal closes a ticket in response to an API-key-authenticated
 // request. It mirrors CloseTicket but skips the per-user permission check
