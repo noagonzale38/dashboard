@@ -1,6 +1,7 @@
 package api
 
 import (
+	"errors"
 	"net/http"
 	"strconv"
 
@@ -8,19 +9,17 @@ import (
 	"github.com/TicketsBot-cloud/dashboard/app"
 	"github.com/TicketsBot-cloud/dashboard/database"
 	"github.com/TicketsBot-cloud/dashboard/redis"
+	"github.com/TicketsBot-cloud/dashboard/rpc/cache"
 	"github.com/TicketsBot-cloud/dashboard/utils"
+	cache2 "github.com/TicketsBot-cloud/gdl/cache"
 	"github.com/gin-gonic/gin"
 )
 
-// externalActorId is the hardcoded Discord user ID used as the actor when a
-// ticket is closed via the external API. The external API is authenticated by
-// a shared API key rather than a logged-in user, so all closes are attributed
-// to this fixed identity.
-const externalActorId uint64 = 793162371702194207
-
 // CloseTicketExternal closes a ticket in response to an API-key-authenticated
-// request. It mirrors CloseTicket but skips the per-user permission check
-// (authorization is the API key itself) and uses a hardcoded actor ID.
+// request. It mirrors CloseTicket but skips the per-user permission check on
+// the dashboard side (authorization is the API key itself). The close payload
+// is attributed to the guild owner so the worker's downstream CanClose
+// permission check always passes.
 func CloseTicketExternal(c *gin.Context) {
 	guildId, err := strconv.ParseUint(c.Param("id"), 10, 64)
 	if err != nil {
@@ -50,10 +49,22 @@ func CloseTicketExternal(c *gin.Context) {
 		return
 	}
 
+	// The worker re-checks permissions on the actor. Use the guild owner so
+	// the check is always satisfied, regardless of which guild the call targets.
+	ownerId, err := cache.Instance.GetGuildOwner(c, guildId)
+	if err != nil {
+		if errors.Is(err, cache2.ErrNotFound) {
+			c.JSON(http.StatusNotFound, utils.ErrorStr("Guild not found"))
+			return
+		}
+		_ = c.AbortWithError(http.StatusInternalServerError, app.NewError(err, "Failed to fetch guild owner"))
+		return
+	}
+
 	data := closerelay.TicketClose{
 		GuildId:  guildId,
 		TicketId: ticket.Id,
-		UserId:   externalActorId,
+		UserId:   ownerId,
 		Reason:   body.Reason,
 	}
 
